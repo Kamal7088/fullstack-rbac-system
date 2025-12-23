@@ -1,116 +1,80 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+export const dynamic = "force-dynamic";
+
 import { useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  async function handleRegister() {
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
+    setError("");
 
-    const res = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-    setLoading(false);
+      const data = await res.json();
 
-    if (!res.ok) {
-      alert("Registration failed");
-      return;
+      if (!res.ok) {
+        setError(data.message || "Register failed");
+        return;
+      }
+
+      router.push("/auth/login");
+    } catch {
+      setError("Something went wrong");
+    } finally {
+      setLoading(false);
     }
-
-    router.push("/auth/login?type=user");
-  }
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <form
+        onSubmit={handleRegister}
+        className="bg-white p-8 rounded-lg shadow-md w-full max-w-md"
+      >
+        <h1 className="text-2xl font-bold mb-6 text-center">Register</h1>
 
-      {/* CARD */}
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8
-        transition-all duration-300 hover:scale-[1.02]">
+        {error && <p className="text-red-500 mb-4">{error}</p>}
 
-        {/* TITLE */}
-        <h1 className="text-3xl font-extrabold text-center mb-2">
-          Create Account 🚀
-        </h1>
-        <p className="text-center text-gray-500 mb-6">
-          Join the RBAC system securely
-        </p>
+        <input
+          type="email"
+          placeholder="Email"
+          className="w-full mb-4 p-3 border rounded"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
 
-        {/* EMAIL */}
-        <div className="mb-4">
-          <label className="block text-sm font-semibold text-gray-600 mb-1">
-            Email Address
-          </label>
-          <input
-            type="email"
-            placeholder="you@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="
-              w-full px-4 py-3 rounded-lg
-              border border-gray-300
-              focus:outline-none focus:ring-4 focus:ring-indigo-400
-              transition
-            "
-          />
-        </div>
+        <input
+          type="password"
+          placeholder="Password"
+          className="w-full mb-4 p-3 border rounded"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
 
-        {/* PASSWORD */}
-        <div className="mb-6">
-          <label className="block text-sm font-semibold text-gray-600 mb-1">
-            Password
-          </label>
-          <input
-            type="password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="
-              w-full px-4 py-3 rounded-lg
-              border border-gray-300
-              focus:outline-none focus:ring-4 focus:ring-purple-400
-              transition
-            "
-          />
-        </div>
-
-        {/* BUTTON */}
         <button
-          onClick={handleRegister}
+          type="submit"
           disabled={loading}
-          className="
-            w-full py-3 rounded-xl
-            text-white font-bold tracking-wide
-            bg-gradient-to-r from-indigo-600 to-purple-600
-            hover:from-indigo-700 hover:to-purple-700
-            focus:outline-none focus:ring-4 focus:ring-purple-300
-            transition-all duration-300
-            hover:scale-105
-            disabled:opacity-50
-          "
+          className="w-full bg-indigo-600 text-white py-3 rounded"
         >
-          {loading ? "Creating Account..." : "Register"}
+          {loading ? "Registering..." : "Register"}
         </button>
-
-        {/* FOOTER */}
-        <p className="text-center text-sm text-gray-500 mt-6">
-          Already have an account?{" "}
-          <Link
-            href="/auth/login?type=user"
-            className="text-indigo-600 font-semibold hover:underline"
-          >
-            Login
-          </Link>
-        </p>
-      </div>
+      </form>
     </div>
   );
 }

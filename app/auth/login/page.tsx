@@ -1,119 +1,86 @@
 "use client";
 
-import { useSearchParams, useRouter } from "next/navigation";
+export const dynamic = "force-dynamic";
+
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-  const searchParams = useSearchParams();
   const router = useRouter();
-
-  const loginType = searchParams.get("type"); // admin | user
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleLogin = async () => {
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
+    setError("");
 
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-    setLoading(false);
+      const data = await res.json();
 
-    if (!res.ok) {
-      alert("Invalid credentials");
-      return;
-    }
+      if (!res.ok) {
+        setError(data.message || "Login failed");
+        setLoading(false);
+        return;
+      }
 
-    // 🔀 SAME REDIRECT LOGIC (UNCHANGED)
-    if (loginType === "admin") {
-      router.push("/admin/dashboard");
-    } else {
+      // login success → dashboard
       router.push("/dashboard");
+    } catch (err) {
+      setError("Something went wrong");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <form
+        onSubmit={handleLogin}
+        className="bg-white p-8 rounded-lg shadow-md w-full max-w-md"
+      >
+        <h1 className="text-2xl font-bold mb-6 text-center">Login</h1>
 
-      {/* CARD */}
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 animate-fadeIn">
+        {error && (
+          <p className="text-red-500 text-sm mb-4 text-center">{error}</p>
+        )}
 
-        {/* TITLE */}
-        <h2 className="text-3xl font-bold text-center mb-2">
-          {loginType === "admin" ? "Admin Login" : "User Login"}
-        </h2>
-
-        <p className="text-center text-gray-500 mb-6">
-          Secure RBAC Authentication
-        </p>
-
-        {/* EMAIL */}
         <input
-          placeholder="Email"
           type="email"
-          className="
-            border w-full p-3 mb-4 rounded-lg
-            focus:outline-none focus:ring-4 focus:ring-indigo-300
-            transition
-          "
+          placeholder="Email"
+          className="w-full mb-4 p-3 border rounded"
+          value={email}
           onChange={(e) => setEmail(e.target.value)}
+          required
         />
 
-        {/* PASSWORD */}
         <input
-          placeholder="Password"
           type="password"
-          className="
-            border w-full p-3 mb-6 rounded-lg
-            focus:outline-none focus:ring-4 focus:ring-purple-300
-            transition
-          "
+          placeholder="Password"
+          className="w-full mb-4 p-3 border rounded"
+          value={password}
           onChange={(e) => setPassword(e.target.value)}
+          required
         />
 
-        {/* BUTTON */}
         <button
-          onClick={handleLogin}
+          type="submit"
           disabled={loading}
-          className="
-            w-full py-3 rounded-lg text-white font-semibold
-            bg-gradient-to-r from-indigo-600 to-purple-600
-            hover:from-indigo-700 hover:to-purple-700
-            hover:scale-[1.02]
-            focus:ring-4 focus:ring-purple-300
-            transition-all
-            disabled:opacity-50
-          "
+          className="w-full bg-indigo-600 text-white py-3 rounded hover:bg-indigo-700 transition"
         >
           {loading ? "Logging in..." : "Login"}
         </button>
-
-        {/* FOOTER */}
-        <p className="text-center text-sm text-gray-500 mt-6">
-          Role Based Access Control System
-        </p>
-      </div>
-
-      {/* FADE ANIMATION */}
-      <style jsx>{`
-        .animate-fadeIn {
-          animation: fadeIn 0.6s ease-out;
-        }
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
+      </form>
     </div>
   );
 }

@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.input {
+  @apply w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500;
+}
+
+.btn {
+  @apply bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition;
+}
+
+.card {
+  @apply bg-white shadow-lg rounded-xl p-6 text-center text-xl font-semibold hover:scale-105 transition;
+}
+
+.table {
+  @apply w-full border rounded-lg overflow-hidden;
+}
+
+.th {
+  @apply bg-gray-100 px-4 py-2 text-left;
+}
+
+.td {
+  @apply px-4 py-2 border-t;
+}

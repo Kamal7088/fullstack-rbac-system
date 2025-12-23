@@ -18,25 +18,29 @@ export default function LoginPage() {
     setError("");
 
     try {
+      const params = new URLSearchParams(window.location.search);
+      const type = params.get("type") || "user";
+
       const res = await fetch("/api/auth/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, type }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
         setError(data.message || "Login failed");
-        setLoading(false);
         return;
       }
 
-      // login success → dashboard
-      router.push("/dashboard");
-    } catch (err) {
+      // ✅ ROLE BASED REDIRECT (IMPORTANT)
+      if (data.role === "admin") {
+        router.replace("/admin/dashboard");
+      } else {
+        router.replace("/users");
+      }
+    } catch {
       setError("Something went wrong");
     } finally {
       setLoading(false);

@@ -5,11 +5,19 @@ export function middleware(req: NextRequest) {
   const role = req.cookies.get("user_role")?.value;
   const path = req.nextUrl.pathname;
 
-  const adminRoutes = ["/users", "/roles", "/permissions"];
+  // 🔐 ONLY ADMIN PROTECTED ROUTES
+  const adminOnlyRoutes = [
+    "/admin",
+    "/roles",
+    "/permissions",
+  ];
 
-  if (adminRoutes.some(r => path.startsWith(r))) {
+  // ❌ user trying admin pages
+  if (adminOnlyRoutes.some(route => path.startsWith(route))) {
     if (role !== "admin") {
-      return NextResponse.redirect(new URL("/dashboard", req.url));
+      return NextResponse.redirect(
+        new URL("/auth/login?type=user", req.url)
+      );
     }
   }
 
@@ -17,5 +25,9 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/users/:path*", "/roles/:path*", "/permissions/:path*"],
+  matcher: [
+    "/admin/:path*",
+    "/roles/:path*",
+    "/permissions/:path*",
+  ],
 };

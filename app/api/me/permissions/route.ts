@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { pool } from "@/lib/db";
 import jwt from "jsonwebtoken";
 
-/* 🔥 ADD THIS LINE (Vercel Fix) */
+/* 🔥 VERCEL FINAL FIX */
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 /**
  * GET /api/me/permissions
@@ -11,9 +12,6 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(req: Request) {
   try {
-    /* =========================
-       1. TOKEN READ FROM COOKIE
-    ========================= */
     const cookie = req.headers.get("cookie");
     const token = cookie?.match(/token=([^;]+)/)?.[1];
 
@@ -21,17 +19,11 @@ export async function GET(req: Request) {
       return NextResponse.json([], { status: 200 });
     }
 
-    /* =========================
-       2. VERIFY JWT
-    ========================= */
     const payload = jwt.verify(
       token,
       process.env.JWT_SECRET!
     ) as { id: number };
 
-    /* =========================
-       3. FETCH PERMISSIONS
-    ========================= */
     const { rows } = await pool.query(
       `
       SELECT DISTINCT p.name
@@ -45,9 +37,6 @@ export async function GET(req: Request) {
       [payload.id]
     );
 
-    /* =========================
-       4. RETURN PERMISSION NAMES
-    ========================= */
     return NextResponse.json(rows.map((r) => r.name));
   } catch (error) {
     console.error("ME PERMISSIONS ERROR:", error);

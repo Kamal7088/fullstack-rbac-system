@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 
+/* 🔥 VERCEL DEPLOY FIX (NO LOGIC CHANGE) */
+export const dynamic = "force-dynamic";
+
 export async function POST(req: Request) {
   const { email, password, type } = await req.json();
 

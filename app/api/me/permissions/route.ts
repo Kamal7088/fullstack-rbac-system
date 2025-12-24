@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { pool } from "@/lib/db";
 import jwt from "jsonwebtoken";
 
+/* 🔥 ADD THIS LINE (Vercel Fix) */
+export const dynamic = "force-dynamic";
+
 /**
  * GET /api/me/permissions
  * Returns permissions of currently logged-in user
@@ -45,9 +48,7 @@ export async function GET(req: Request) {
     /* =========================
        4. RETURN PERMISSION NAMES
     ========================= */
-    return NextResponse.json(
-      rows.map((r) => r.name)
-    );
+    return NextResponse.json(rows.map((r) => r.name));
   } catch (error) {
     console.error("ME PERMISSIONS ERROR:", error);
     return NextResponse.json([], { status: 500 });
